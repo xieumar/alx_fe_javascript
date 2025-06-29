@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple List App</title>
+    <style>
+        /* Add your CSS styles here after completing the exercise*/
+    </style>
+</head>
+<body>
+
+    <h1>Simple List App</h1>
+
+    <!-- Text box and button -->
+    <div>
+        <input type="text" id="input-text" placeholder="Enter item">
+        <button id="add-button">Add</button>
+    </div>
+
+    <h2>Added List:</h2>
+    <ul id="list-container"></ul>
+
+    <script>
+      function addItem() {
+        const input = document.getElementById('input-text');
+        const inputValue = input.value.trim();
+
+        if (inputValue == ''){
+          console.log('input has no value')
+          alert('try enter something nau')
+        } else{
+          const li = document.createElement('li');
+          li.innerHTML = inputValue;
+          document.getElementById('list-container').appendChild(li);
+          input.value = '';
+        }
+      };
+      document.getElementById('add-button').addEventListener('click', addItem)
+    </script>
+</body>
+</html>
