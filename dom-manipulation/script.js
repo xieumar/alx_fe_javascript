@@ -151,23 +151,29 @@ function setupImportQuotes() {
         reader.readAsText(file);
     });
 }
-async function fetchQuotesFromServer(url) {
+
+// ✅ NEW: Fetch from server and sync
+async function fetchQuotesFromServer() {
     try {
-        const response = await fetch(url, {
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
             headers: { 'Accept': 'application/json' }
         });
+
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
-        const serverQuotes = await response.json();
-        if (!Array.isArray(serverQuotes)) throw new Error("Server data is not an array.");
+        const serverPosts = await response.json();
+        if (!Array.isArray(serverPosts)) throw new Error("Server response not an array.");
 
         const existing = new Set(quotesArray.map(q => q.text.toLowerCase().trim()));
         let added = 0;
 
-        serverQuotes.forEach(q => {
-            const key = q.text?.toLowerCase().trim();
-            if (q.text && q.category && !existing.has(key)) {
-                quotesArray.push({ text: q.text.trim(), category: q.category.trim() });
+        serverPosts.slice(0, 5).forEach(post => {
+            const text = post.title?.trim();
+            const category = 'ServerSync';
+            const key = text?.toLowerCase();
+
+            if (text && !existing.has(key)) {
+                quotesArray.push({ text, category });
                 added++;
             }
         });
@@ -176,12 +182,11 @@ async function fetchQuotesFromServer(url) {
         populateCategories();
         showRandomQuote();
 
-        alert(`${added} quote(s) added from server.`);
+        console.log(`${added} quote(s) synced from server.`);
     } catch (error) {
-        alert("Failed to fetch quotes: " + error.message);
+        console.error("Failed to fetch from server:", error.message);
     }
 }
-
 
 document.addEventListener("DOMContentLoaded", function () {
     populateCategories();
@@ -190,4 +195,5 @@ document.addEventListener("DOMContentLoaded", function () {
     createAddQuoteForm();
     setupExportButton();
     setupImportQuotes();
+    fetchQuotesFromServer(); // ✅ call server sync on load
 });
