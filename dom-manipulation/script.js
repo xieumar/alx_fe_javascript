@@ -7,6 +7,20 @@ let quotesArray = JSON.parse(localStorage.getItem('quotesData')) || [
     { text: "Code is like humor. When you have to explain it, it’s bad.", category: "Programming" }
 ];
 
+function showNotification(message) {
+    const note = document.createElement('div');
+    note.textContent = message;
+    note.style.backgroundColor = "#dff0d8";
+    note.style.color = "#3c763d";
+    note.style.padding = "10px";
+    note.style.margin = "10px 0";
+    note.style.border = "1px solid #3c763d";
+    note.style.borderRadius = "4px";
+    note.style.textAlign = "center";
+    document.querySelector('.container').prepend(note);
+    setTimeout(() => note.remove(), 3000);
+}
+
 function showRandomQuote() {
     const selectedCategory = localStorage.getItem('selectedCategory') || 'all';
     const filtered = selectedCategory === 'all'
@@ -102,13 +116,8 @@ async function postQuoteToServer(quote) {
     try {
         const response = await fetch(SERVER_URL, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                title: quote.text,
-                body: quote.category
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: quote.text, body: quote.category })
         });
         if (!response.ok) throw new Error("Failed to post quote.");
         console.log("Quote posted to server.");
@@ -172,27 +181,13 @@ function setupImportQuotes() {
     });
 }
 
-// ✅ Notification for syncs
-function notifyUser(message) {
-    const note = document.createElement('div');
-    note.textContent = message;
-    note.style.backgroundColor = "#ffe58f";
-    note.style.padding = "8px";
-    note.style.border = "1px solid #999";
-    note.style.marginBottom = "10px";
-    note.style.textAlign = "center";
-    document.querySelector('.container').prepend(note);
-    setTimeout(() => note.remove(), 4000);
-}
-
-// ✅ Fetch quotes from server
 async function fetchQuotesFromServer() {
     try {
         const response = await fetch(SERVER_URL, {
             headers: { 'Accept': 'application/json' }
         });
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         const serverPosts = await response.json();
         if (!Array.isArray(serverPosts)) throw new Error("Server response not an array.");
 
@@ -214,20 +209,16 @@ async function fetchQuotesFromServer() {
             localStorage.setItem('quotesData', JSON.stringify(quotesArray));
             populateCategories();
             showRandomQuote();
-            notifyUser(`${added} quote(s) synced from server.`);
+            showNotification("Quotes synced with server!");
         }
     } catch (error) {
         console.error("Failed to fetch from server:", error.message);
     }
 }
 
-// ✅ Sync function wrapper
 function syncQuotes() {
     fetchQuotesFromServer();
 }
-
-// ✅ Periodic syncing
-setInterval(syncQuotes, SYNC_INTERVAL);
 
 document.addEventListener("DOMContentLoaded", function () {
     populateCategories();
@@ -237,5 +228,6 @@ document.addEventListener("DOMContentLoaded", function () {
     createAddQuoteForm();
     setupExportButton();
     setupImportQuotes();
-    fetchQuotesFromServer(); // initial sync
+    fetchQuotesFromServer(); // Initial sync
+    setInterval(syncQuotes, SYNC_INTERVAL); // Periodic sync
 });
