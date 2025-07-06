@@ -84,6 +84,6 @@ input{
     margin-top: 50px;
     flex-wrap: wrap; /* optional: allows wrapping on small screens */
 }
-#exportQuotes{
-    margin: 0 auto;
+#exportQuotes, #importQuotes{
+    margin: 10px auto;
 }

@@ -60,10 +60,11 @@ function createAddQuoteForm() {
     document.querySelector('.container').appendChild(form);
 }
 
-function handleImportQuotes() {
-    const importInput = document.getElementById('importQuotes');
-    importInput.addEventListener('change', function () {
-        const file = importInput.files[0];
+document.addEventListener("DOMContentLoaded", function () {
+    showRandomQuote();
+    document.getElementById('newQuote').addEventListener('click', showRandomQuote);
+    document.getElementById('importQuotes').addEventListener('change', function () {
+        const file = this.files[0];
         if (!file) return;
 
         const reader = new FileReader();
@@ -76,7 +77,6 @@ function handleImportQuotes() {
                             quotesArray.push(q);
                         }
                     });
-
                     localStorage.setItem('quotesData', JSON.stringify(quotesArray));
                     alert("Quotes imported successfully!");
                     showRandomQuote();
@@ -90,11 +90,6 @@ function handleImportQuotes() {
 
         reader.readAsText(file);
     });
-}
 
-document.addEventListener("DOMContentLoaded", function () {
-    showRandomQuote();
-    document.getElementById('newQuote').addEventListener('click', showRandomQuote);
     createAddQuoteForm();
-    handleImportQuotes();
 });
