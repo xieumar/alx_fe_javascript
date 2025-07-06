@@ -151,6 +151,36 @@ function setupImportQuotes() {
         reader.readAsText(file);
     });
 }
+async function fetchQuotesFromServer(url) {
+    try {
+        const response = await fetch(url, {
+            headers: { 'Accept': 'application/json' }
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+        const serverQuotes = await response.json();
+        if (!Array.isArray(serverQuotes)) throw new Error("Server data is not an array.");
+
+        const existing = new Set(quotesArray.map(q => q.text.toLowerCase().trim()));
+        let added = 0;
+
+        serverQuotes.forEach(q => {
+            const key = q.text?.toLowerCase().trim();
+            if (q.text && q.category && !existing.has(key)) {
+                quotesArray.push({ text: q.text.trim(), category: q.category.trim() });
+                added++;
+            }
+        });
+
+        localStorage.setItem('quotesData', JSON.stringify(quotesArray));
+        populateCategories();
+        showRandomQuote();
+
+        alert(`${added} quote(s) added from server.`);
+    } catch (error) {
+        alert("Failed to fetch quotes: " + error.message);
+    }
+}
 
 
 document.addEventListener("DOMContentLoaded", function () {
