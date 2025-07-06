@@ -1,18 +1,51 @@
-const quotesArray = JSON.parse(localStorage.getItem('quotesData')) || [
+let quotesArray = JSON.parse(localStorage.getItem('quotesData')) || [
     { text: "Stay hungry, stay foolish.", category: "Inspiration" },
     { text: "Simplicity is the ultimate sophistication.", category: "Design" },
     { text: "Code is like humor. When you have to explain it, it’s bad.", category: "Programming" }
 ];
 
 function showRandomQuote() {
-    const randomIndex = Math.floor(Math.random() * quotesArray.length);
-    const quote = quotesArray[randomIndex];
+    const selectedCategory = localStorage.getItem('selectedCategory') || 'all';
+    const filtered = selectedCategory === 'all'
+        ? quotesArray
+        : quotesArray.filter(q => q.category === selectedCategory);
+
+    if (filtered.length === 0) {
+        document.getElementById('quoteDisplay').innerHTML = "<p>No quotes in this category.</p>";
+        return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * filtered.length);
+    const quote = filtered[randomIndex];
 
     const quoteDiv = document.getElementById('quoteDisplay');
-    quoteDiv.innerHTML = `<p>'${quote.text}'</p>
-                          <small>${quote.category}</small>`;
+    quoteDiv.innerHTML = `<p>'${quote.text}'</p><small>${quote.category}</small>`;
 
     sessionStorage.setItem('lastViewedQuote', JSON.stringify(quote));
+}
+
+function populateCategories() {
+    const dropdown = document.getElementById('categoryFilter');
+    const categories = [...new Set(quotesArray.map(q => q.category))];
+
+    dropdown.innerHTML = `<option value="all">All Categories</option>`;
+    categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        dropdown.appendChild(option);
+    });
+
+    const savedCategory = localStorage.getItem('selectedCategory');
+    if (savedCategory) {
+        dropdown.value = savedCategory;
+    }
+}
+
+function filterQuotes() {
+    const selected = document.getElementById('categoryFilter').value;
+    localStorage.setItem('selectedCategory', selected);
+    showRandomQuote();
 }
 
 function createAddQuoteForm() {
@@ -54,6 +87,7 @@ function createAddQuoteForm() {
         quoteInput.value = "";
         categoryInput.value = "";
 
+        populateCategories();
         showRandomQuote();
     });
 
@@ -77,11 +111,7 @@ function setupExportButton() {
     });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    showRandomQuote();
-
-    document.getElementById('newQuote').addEventListener('click', showRandomQuote);
-
+function setupImportQuotes() {
     document.getElementById('importQuotes').addEventListener('change', function () {
         const file = this.files[0];
         if (!file) return;
@@ -97,8 +127,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     });
                     localStorage.setItem('quotesData', JSON.stringify(quotesArray));
-                    alert("Quotes imported successfully!");
+                    populateCategories();
                     showRandomQuote();
+                    alert("Quotes imported successfully!");
                 } else {
                     alert("Invalid file format.");
                 }
@@ -109,7 +140,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         reader.readAsText(file);
     });
+}
 
+document.addEventListener("DOMContentLoaded", function () {
+    populateCategories();
+    showRandomQuote();
+    document.getElementById('newQuote').addEventListener('click', showRandomQuote);
     createAddQuoteForm();
     setupExportButton();
+    setupImportQuotes();
 });

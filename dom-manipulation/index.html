@@ -7,14 +7,17 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <div class="container">
-      <h1>Dynamic <span>Quote</span> Generator</h1>
-      <div id="quoteDisplay"></div>
-      <button id="newQuote">Show New Quote</button>
-      <input type="file" id="importQuotes" accept="application/json" />
-      <button id="exportQuotes">Export Quotes</button>
+   <div class="container">
+    <h1>Dynamic <span>Quote</span> Generator</h1>
+    <select id="categoryFilter" onchange="filterQuotes()">
+      <option value="all">All Categories</option>
+    </select>
+    <div id="quoteDisplay"></div>
+    <button id="newQuote">Show New Quote</button>
+    <input type="file" id="importQuotes" accept="application/json" />
+    <button id="exportQuotes">Export Quotes</button>
+  </div>
 
-    </div>
     
     <script src="script.js"></script>
   </body>
