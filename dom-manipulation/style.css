@@ -37,10 +37,9 @@ small{
     margin-top: 35px;
 }
 button {
-    margin: 0 auto;
+    margin: 20px auto;
     width: 150px;
     height: 35px;
-    margin-top: 30px;
     border-radius: 15px;
     outline: 0;
     border: 0;
@@ -84,4 +83,7 @@ input{
     align-items: center;
     margin-top: 50px;
     flex-wrap: wrap; /* optional: allows wrapping on small screens */
+}
+#exportQuotes{
+    margin: 0 auto;
 }

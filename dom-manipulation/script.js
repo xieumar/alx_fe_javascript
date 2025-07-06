@@ -57,35 +57,11 @@ function createAddQuoteForm() {
         showRandomQuote();
     });
 
-   document.querySelector('.container').appendChild(form);
-
+    document.querySelector('.container').appendChild(form);
 }
 
-function createExportImportButtons() {
-    const controlsDiv = document.createElement('div');
-    controlsDiv.classList.add('controls'); // apply your CSS styles
-
-    // Export Button
-    const exportBtn = document.createElement('button');
-    exportBtn.textContent = 'Export Quotes';
-
-    exportBtn.addEventListener('click', function () {
-        const blob = new Blob([JSON.stringify(quotesArray, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'quotes.json';
-        a.click();
-
-        URL.revokeObjectURL(url);
-    });
-
-    // Import File Input
-    const importInput = document.createElement('input');
-    importInput.type = 'file';
-    importInput.accept = 'application/json';
-
+function handleImportQuotes() {
+    const importInput = document.getElementById('importQuotes');
     importInput.addEventListener('change', function () {
         const file = importInput.files[0];
         if (!file) return;
@@ -114,18 +90,11 @@ function createExportImportButtons() {
 
         reader.readAsText(file);
     });
-
-    controlsDiv.appendChild(exportBtn);
-    controlsDiv.appendChild(importInput);
-
-    // Inject inside the .container
-    const container = document.querySelector('.container');
-    container.appendChild(controlsDiv);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
     showRandomQuote();
     document.getElementById('newQuote').addEventListener('click', showRandomQuote);
     createAddQuoteForm();
-    createExportImportButtons();
+    handleImportQuotes();
 });
