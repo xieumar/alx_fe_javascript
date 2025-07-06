@@ -67,7 +67,7 @@ function createExportImportButtons() {
 
     // Export Button
     const exportBtn = document.createElement('button');
-    exportBtn.textContent = 'Export Quotes as JSON';
+    exportBtn.textContent = 'Export Quotes';
 
     exportBtn.addEventListener('click', function () {
         const blob = new Blob([JSON.stringify(quotesArray, null, 2)], { type: 'application/json' });
