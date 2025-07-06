@@ -1,4 +1,4 @@
-const quotesArray =  [
+const quotesArray = JSON.parse(localStorage.getItem('quotesData')) || [
                 { text: "Stay hungry, stay foolish.", category: "Inspiration" },
                 { text: "Simplicity is the ultimate sophistication.", category: "Design" },
                 { text: "Code is like humor. When you have to explain it, it’s bad.", category: "Programming" }];
@@ -10,6 +10,8 @@ function showRandomQuote(){
     const quoteDiv = document.getElementById('quoteDisplay');
     quoteDiv.innerHTML = `<p>'${quote.text}'</p>
                         <small>${quote.category}</small>`
+    
+    sessionStorage.setItem('lastViewedQuote', JSON.stringify(quote));
 
 }
 
@@ -50,10 +52,14 @@ function createAddQuoteForm(){
 
             quotesArray.push(newQuote);
 
+            localStorage.setItem('quotesData', JSON.stringify(quotesArray))
+
             quoteInput.value = "";
             categoryInput.value = "";
 
             showRandomQuote();
+
+            
     });
 
     document.body.appendChild(form);
