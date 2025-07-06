@@ -1,3 +1,6 @@
+const SERVER_URL = "https://jsonplaceholder.typicode.com/posts";
+const SYNC_INTERVAL = 15000;
+
 let quotesArray = JSON.parse(localStorage.getItem('quotesData')) || [
     { text: "Stay hungry, stay foolish.", category: "Inspiration" },
     { text: "Simplicity is the ultimate sophistication.", category: "Design" },
@@ -73,7 +76,7 @@ function createAddQuoteForm() {
     form.appendChild(categoryInput);
     form.appendChild(submitBtn);
 
-    form.addEventListener('submit', function (event) {
+    form.addEventListener('submit', async function (event) {
         event.preventDefault();
 
         const newQuote = {
@@ -83,6 +86,7 @@ function createAddQuoteForm() {
 
         quotesArray.push(newQuote);
         localStorage.setItem('quotesData', JSON.stringify(quotesArray));
+        await postQuoteToServer(newQuote);
 
         quoteInput.value = "";
         categoryInput.value = "";
@@ -94,19 +98,35 @@ function createAddQuoteForm() {
     document.querySelector('.container').appendChild(form);
 }
 
+async function postQuoteToServer(quote) {
+    try {
+        const response = await fetch(SERVER_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                title: quote.text,
+                body: quote.category
+            })
+        });
+        if (!response.ok) throw new Error("Failed to post quote.");
+        console.log("Quote posted to server.");
+    } catch (err) {
+        console.error("Error posting to server:", err.message);
+    }
+}
+
 function setupExportButton() {
     const exportBtn = document.getElementById('exportQuotes');
-
     exportBtn.addEventListener('click', function () {
         const dataStr = JSON.stringify(quotesArray, null, 2);
         const blob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-
         const downloadLink = document.createElement('a');
         downloadLink.href = url;
         downloadLink.download = 'quotes.json';
         downloadLink.click();
-
         URL.revokeObjectURL(url);
     });
 }
@@ -152,13 +172,25 @@ function setupImportQuotes() {
     });
 }
 
-// ✅ NEW: Fetch from server and sync
+// ✅ Notification for syncs
+function notifyUser(message) {
+    const note = document.createElement('div');
+    note.textContent = message;
+    note.style.backgroundColor = "#ffe58f";
+    note.style.padding = "8px";
+    note.style.border = "1px solid #999";
+    note.style.marginBottom = "10px";
+    note.style.textAlign = "center";
+    document.querySelector('.container').prepend(note);
+    setTimeout(() => note.remove(), 4000);
+}
+
+// ✅ Fetch quotes from server
 async function fetchQuotesFromServer() {
     try {
-        const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+        const response = await fetch(SERVER_URL, {
             headers: { 'Accept': 'application/json' }
         });
-
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const serverPosts = await response.json();
@@ -167,7 +199,7 @@ async function fetchQuotesFromServer() {
         const existing = new Set(quotesArray.map(q => q.text.toLowerCase().trim()));
         let added = 0;
 
-        serverPosts.slice(0, 5).forEach(post => {
+        serverPosts.slice(0, 10).forEach(post => {
             const text = post.title?.trim();
             const category = 'ServerSync';
             const key = text?.toLowerCase();
@@ -178,22 +210,32 @@ async function fetchQuotesFromServer() {
             }
         });
 
-        localStorage.setItem('quotesData', JSON.stringify(quotesArray));
-        populateCategories();
-        showRandomQuote();
-
-        console.log(`${added} quote(s) synced from server.`);
+        if (added > 0) {
+            localStorage.setItem('quotesData', JSON.stringify(quotesArray));
+            populateCategories();
+            showRandomQuote();
+            notifyUser(`${added} quote(s) synced from server.`);
+        }
     } catch (error) {
         console.error("Failed to fetch from server:", error.message);
     }
 }
 
+// ✅ Sync function wrapper
+function syncQuotes() {
+    fetchQuotesFromServer();
+}
+
+// ✅ Periodic syncing
+setInterval(syncQuotes, SYNC_INTERVAL);
+
 document.addEventListener("DOMContentLoaded", function () {
     populateCategories();
     showRandomQuote();
     document.getElementById('newQuote').addEventListener('click', showRandomQuote);
+    document.getElementById('categoryFilter').addEventListener('change', filterQuotes);
     createAddQuoteForm();
     setupExportButton();
     setupImportQuotes();
-    fetchQuotesFromServer(); // ✅ call server sync on load
+    fetchQuotesFromServer(); // initial sync
 });
