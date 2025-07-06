@@ -60,9 +60,28 @@ function createAddQuoteForm() {
     document.querySelector('.container').appendChild(form);
 }
 
+function setupExportButton() {
+    const exportBtn = document.getElementById('exportQuotes');
+
+    exportBtn.addEventListener('click', function () {
+        const dataStr = JSON.stringify(quotesArray, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = 'quotes.json';
+        downloadLink.click();
+
+        URL.revokeObjectURL(url);
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     showRandomQuote();
+
     document.getElementById('newQuote').addEventListener('click', showRandomQuote);
+
     document.getElementById('importQuotes').addEventListener('change', function () {
         const file = this.files[0];
         if (!file) return;
@@ -92,4 +111,5 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     createAddQuoteForm();
+    setupExportButton();
 });
