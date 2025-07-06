@@ -114,33 +114,44 @@ function setupExportButton() {
 function setupImportQuotes() {
     document.getElementById('importQuotes').addEventListener('change', function () {
         const file = this.files[0];
-        if (!file) return;
+        if (!file || file.type !== "application/json") {
+            alert("Please upload a valid JSON file.");
+            return;
+        }
 
         const reader = new FileReader();
         reader.onload = function (e) {
             try {
                 const importedQuotes = JSON.parse(e.target.result);
-                if (Array.isArray(importedQuotes)) {
-                    importedQuotes.forEach(q => {
-                        if (q.text && q.category) {
-                            quotesArray.push(q);
-                        }
-                    });
-                    localStorage.setItem('quotesData', JSON.stringify(quotesArray));
-                    populateCategories();
-                    showRandomQuote();
-                    alert("Quotes imported successfully!");
-                } else {
-                    alert("Invalid file format.");
-                }
+                if (!Array.isArray(importedQuotes)) throw new Error("Invalid file format.");
+
+                let updated = 0, skipped = 0;
+                const existing = new Set(quotesArray.map(q => q.text.toLowerCase().trim()));
+
+                importedQuotes.forEach(q => {
+                    const key = q.text?.toLowerCase().trim();
+                    if (q.text && q.category && !existing.has(key)) {
+                        quotesArray.push({ text: q.text.trim(), category: q.category.trim() });
+                        updated++;
+                    } else {
+                        skipped++;
+                    }
+                });
+
+                localStorage.setItem('quotesData', JSON.stringify(quotesArray));
+                populateCategories();
+                showRandomQuote();
+
+                alert(`Import complete!\nAdded: ${updated} new quote(s)\nSkipped: ${skipped} duplicate(s).`);
             } catch (err) {
-                alert("Error reading file: " + err.message);
+                alert("Error importing quotes: " + err.message);
             }
         };
 
         reader.readAsText(file);
     });
 }
+
 
 document.addEventListener("DOMContentLoaded", function () {
     populateCategories();
